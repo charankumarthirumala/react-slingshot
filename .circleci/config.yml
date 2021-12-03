@@ -1,28 +1,36 @@
 version: 2.1
 
 jobs:
-  save_hello_world_output:
+  build:
     docker:
       - image: circleci/node:13.8.0
     steps:
-      - run: echo "hello world" > ~/output.txt
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - output.txt
+      - checkout
+      - run: npm install
 
-  print_output_file:
+  test:
     docker:
       - image: circleci/node:13.8.0
     steps:
-      - attach_workspace:
-          at: ~/
-      - run: cat ~/output.txt
-
+      - checkout
+      - run: npm test
+      - run: npm lint  
+  Analyse:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run: npm analyse
 workflows:
   my_workflow:
     jobs:
-      - save_hello_world_output
-      - print_output_file:
+      - build
+      - test:
           requires:
-            - save_hello_world_output
+            - build
+      - Analyse:
+          requires:
+            - test
+
+         
+
